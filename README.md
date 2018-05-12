@@ -11,12 +11,12 @@
 
   * [bin](/bin) binary executables
   * [build](/build) intermediate binaries
-  * [docs](/docs) formal docs and art
+  * [docs](/docs) apply directly to the eyeballs
     * [libdocs](/docs/libdocs) relevant library documentation
-    * [art](/docs/art) PCB art
-        * [raster](/docs/art/raster)
-        * [vector](/docs/art/vector)
+    * [manual](/docs/manual) RTFM
+    * [art](/docs/art)
+        * [pcb](/docs/art/pcb)
+        * [propaganda](/docs/art/propaganda)
   * [include](/include) our libraries
   * [lib](/lib) their libraries
-  * [resources](/resources) build assets
   * [source](/source) serious business
