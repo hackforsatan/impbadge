@@ -3,7 +3,7 @@
 
 # This repository is for fledging demons.
 
-## Current Version: 0.1.666
+## Current Version: 0.1.666 (DC26 demon remains in the nursery)
   
 *Version numbering: [Release number].[Updates this release].[666 if validated; 0 if not]*
 
