@@ -1,5 +1,5 @@
 # IMPBADGE
-## *Stay alert, you're in a public repo now.
+## * Stay alert, you're in a public repo now.
 
 
 ![alt text](/seance.jpeg "IMPBADGE 2018")
