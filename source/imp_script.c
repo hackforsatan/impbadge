@@ -7,7 +7,7 @@
 #include "imp_script.h"
 
 instruction_type_t imp_check_type(unsigned char instr) {
-	if (instr == 0xDD || instr == 0xEE || instr == 0xFF || (instr >= 0xF3  && instr <= 0xF5))
+	if (instr == IMP_NUKE || instr == IMP_DELEEP || instr == IMP_MENU || (instr > 0xF2  && instr < 0xF6))
 		return IMP_TYPE_COMMAND;
 	if (instr == 0x00 || instr > 0x80) return IMP_TYPE_ZERO;
 	
@@ -47,11 +47,13 @@ void imp_run_script(unsigned char *instruction_queue, unsigned char N) {
 	}
 	
 	/* execute queue of instructions */
+    instruction_type_t type = IMP_TYPE_NOP;
 	for (i = 0; i < N; i++) {
-		if (imp_check_type(instruction_queue[i]) == IMP_TYPE_ZERO) {
+        type = imp_check_type(instruction_queue[i]);
+		if (type == IMP_TYPE_ZERO) {
 			i = imp_exec_type_zero(instruction_queue[i], i);
 			if (program_ended) return;
-		} else { /* IMP_TYPE_ONE */
+		} else if (type == IMP_TYPE_ONE) {
 			i = imp_exec_type_one(instruction_queue[i], instruction_queue[i+1], i);
 		}
 	}
@@ -115,25 +117,25 @@ unsigned char imp_exec_type_one(unsigned char instr, unsigned char arg, unsigned
 		imp_reg_wreg = arg;
 		break;
 	case IMP_MOVRW:
-		if (arg >= 0x00 && arg <= 0x0F) imp_reg_wreg = imp_regs[arg];
-        else if (arg == IMP_DISP) imp_reg_wreg = imp_reg_disp;
+        if (arg == IMP_DISP) imp_reg_wreg = imp_reg_disp;
         else if (arg == IMP_WHEEL) imp_reg_wreg = imp_reg_wheel;
         else if (arg == IMP_COMP) imp_reg_wreg = imp_reg_comp;
+        else if (arg < 0x10) imp_reg_wreg = imp_regs[arg];
 		break;
 	case IMP_MOVWR:
-		if (arg >= 0x00 && arg <= 0x0F) imp_regs[arg] = imp_reg_wreg;
-        else if (arg == IMP_DISP) imp_reg_disp = imp_reg_wreg;
+        if (arg == IMP_DISP) imp_reg_disp = imp_reg_wreg;
         else if (arg == IMP_WHEEL) imp_reg_wheel = imp_reg_wreg;
         else if (arg == IMP_COMP) imp_reg_comp = imp_reg_wreg;
+        else if (arg < 0x10) imp_regs[arg] = imp_reg_wreg;
 		break;
 	case IMP_MOVVC:
 		imp_reg_comp = arg;
 		break;
 	case IMP_MOVRC:
-		if (arg >= 0x00 && arg <= 0x0F) imp_reg_comp = imp_regs[arg];
-        else if (arg == IMP_DISP) imp_reg_comp = imp_reg_disp;
+		if (arg == IMP_DISP) imp_reg_comp = imp_reg_disp;
         else if (arg == IMP_WHEEL) imp_reg_comp = imp_reg_wheel;
         else if (arg == IMP_WREG) imp_reg_comp = imp_reg_wreg;
+        else if (arg < 0x10) imp_reg_comp = imp_regs[arg];
 		break;
 	case IMP_LBL:
 		/* already handled by label crawling routine */
@@ -192,31 +194,35 @@ unsigned char imp_exec_type_one(unsigned char instr, unsigned char arg, unsigned
         }
 		break;
 	case IMP_INCR:
-		if (arg >= 0x00 && arg <= 0x0F) imp_regs[arg]++;
-        else if (arg == IMP_DISP) imp_reg_disp++;
+		if (arg == IMP_DISP) imp_reg_disp++;
         else if (arg == IMP_WHEEL) imp_reg_wheel++;
         else if (arg == IMP_COMP) imp_reg_comp++;
+        else if (arg == IMP_WREG) imp_reg_wreg++;
+        else if (arg < 0x10) imp_regs[arg]++;
 		break;
 	case IMP_DECR:
-		if (arg >= 0x00 && arg <= 0x0F) imp_regs[arg]--;
-        else if (arg == IMP_DISP) imp_reg_disp--;
+		if (arg == IMP_DISP) imp_reg_disp--;
         else if (arg == IMP_WHEEL) imp_reg_wheel--;
         else if (arg == IMP_COMP) imp_reg_comp--;
+        else if (arg == IMP_WREG) imp_reg_wreg--;
+        else if (arg < 0x10) imp_regs[arg]--;
 		break;
 	case IMP_CLRR:
-		if (arg >= 0x00 && arg <= 0x0F) imp_regs[arg] = 0x00;
-        else if (arg == IMP_DISP) imp_reg_disp = 0x00;
+		if (arg == IMP_DISP) imp_reg_disp = 0x00;
         else if (arg == IMP_WHEEL) imp_reg_wheel = 0x00;
         else if (arg == IMP_COMP) imp_reg_comp = 0x00;
+        else if (arg == IMP_WREG) imp_reg_wreg = 0x00;
+        else if (arg < 0x10) imp_regs[arg] = 0x00;
 		break;
 	case IMP_ADDVW:
 		imp_reg_wreg += arg;
 		break;
 	case IMP_ADDRW:
-		if (arg >= 0x00 && arg <= 0x0F) imp_reg_wreg += imp_regs[arg];
-        else if (arg == IMP_DISP) imp_reg_wreg += imp_reg_disp;
+		if (arg == IMP_DISP) imp_reg_wreg += imp_reg_disp;
         else if (arg == IMP_WHEEL) imp_reg_wreg += imp_reg_wheel;
         else if (arg == IMP_COMP) imp_reg_wreg += imp_reg_comp;
+        else if (arg == IMP_WREG) imp_reg_wreg += imp_reg_wreg;
+        else if (arg < 0x10) imp_reg_wreg += imp_regs[arg];
 		break;
 	case IMP_BSL:
 		imp_reg_wreg << arg;
@@ -229,11 +235,7 @@ unsigned char imp_exec_type_one(unsigned char instr, unsigned char arg, unsigned
 		else imp_reg_wreg = imp_reg_wreg - arg;
 		break;
 	case IMP_SUBRW:
-		if (arg >= 0x00 && arg <= 0x0F) {
-			if (imp_regs[arg] > imp_reg_wreg)
-				imp_reg_wreg = imp_regs[arg] - imp_reg_wreg;
-			else imp_reg_wreg = imp_reg_wreg - imp_regs[arg];
-		} else if (arg == IMP_DISP) {
+		if (arg == IMP_DISP) {
             if (imp_reg_disp > imp_reg_wreg)
 				imp_reg_wreg = imp_reg_disp - imp_reg_wreg;
 			else imp_reg_wreg = imp_reg_wreg - imp_reg_disp;
@@ -245,6 +247,10 @@ unsigned char imp_exec_type_one(unsigned char instr, unsigned char arg, unsigned
             if (imp_reg_comp > imp_reg_wreg)
 				imp_reg_wreg = imp_reg_comp - imp_reg_wreg;
 			else imp_reg_wreg = imp_reg_wreg - imp_reg_comp;
+        } else if (arg < 0x10) {
+            if (imp_regs[arg] > imp_reg_wreg)
+				imp_reg_wreg = imp_regs[arg] - imp_reg_wreg;
+			else imp_reg_wreg = imp_reg_wreg - imp_regs[arg];
         }
 		break;
 	case IMP_DUS:
@@ -260,28 +266,29 @@ unsigned char imp_exec_type_one(unsigned char instr, unsigned char arg, unsigned
         imp_reg_wreg &= arg;
 		break;
 	case IMP_ANDRW:
-        if (arg >= 0x00 && arg <= 0x0F) imp_reg_wreg &= imp_regs[arg];
-        else if (arg == IMP_DISP) imp_reg_wreg &= imp_reg_disp;
+        if (arg == IMP_DISP) imp_reg_wreg &= imp_reg_disp;
         else if (arg == IMP_WHEEL) imp_reg_wreg &= imp_reg_wheel;
         else if (arg == IMP_COMP) imp_reg_wreg &= imp_reg_comp;
+        else if (arg < 0x10) imp_reg_wreg &= imp_regs[arg];
 		break;
 	case IMP_ORVW:
         imp_reg_wreg |= arg;
 		break;
 	case IMP_ORRW:
-        if (arg >= 0x00 && arg <= 0x0F) imp_reg_wreg |= imp_regs[arg];
-        else if (arg == IMP_DISP) imp_reg_wreg |= imp_reg_disp;
+        if (arg == IMP_DISP) imp_reg_wreg |= imp_reg_disp;
         else if (arg == IMP_WHEEL) imp_reg_wreg |= imp_reg_wheel;
         else if (arg == IMP_COMP) imp_reg_wreg |= imp_reg_comp;
+        else if (arg < 0x10) imp_reg_wreg |= imp_regs[arg];
 		break;
 	case IMP_XORVW:
         imp_reg_wreg ^= arg;
 		break;
 	case IMP_XORRW:
-        if (arg >= 0x00 && arg <= 0x0F) imp_reg_wreg ^= imp_regs[arg];
-        else if (arg == IMP_DISP) imp_reg_wreg ^= imp_reg_disp;
+        if (arg == IMP_DISP) imp_reg_wreg ^= imp_reg_disp;
         else if (arg == IMP_WHEEL) imp_reg_wreg ^= imp_reg_wheel;
         else if (arg == IMP_COMP) imp_reg_wreg ^= imp_reg_comp;
+        else if (arg == IMP_WREG) imp_reg_wreg ^= imp_reg_wreg;
+        else if (arg < 0x10) imp_reg_wreg ^= imp_regs[arg];
 		break;
 	default:
 		break;

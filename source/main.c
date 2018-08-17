@@ -68,6 +68,21 @@ void interrupt high_priority imp_isr_high(void);
 //void interrupt low_priority imp_isr_low(void);
 
 /* globals */
+//unsigned char instr_buff[INSTRUCTION_BUFFER_SIZE] = {
+//    IMP_LBL,
+//    0x01,
+//    IMP_MOVVW, 0xF0,
+////    IMP_ADDVW, 0x01,
+//    IMP_MOVWR, IMP_DISP,
+//    IMP_DS, 0x01,
+//    IMP_MOVVW, 0x0F,
+////    IMP_ADDVW, 0x01,
+//    IMP_MOVWR, IMP_DISP,
+//    IMP_DS, 0x01,
+//    IMP_BR,
+//    0x01,
+//    IMP_END
+//}; // TODO: Replace with {IMP_END}
 unsigned char instr_buff[INSTRUCTION_BUFFER_SIZE] = {IMP_END};
 unsigned char *instr_read_ptr, *instr_write_ptr = instr_buff;
 blinky_t blinky = BLINKY_CLOCK;
@@ -383,6 +398,11 @@ void handle_command(badge_mode_t *badge_mode) {
 		return;
 	}
 	if (wheel_num == IMP_RUN) {
+        imp_reg_comp = 0;
+        imp_reg_disp = 0;
+        imp_reg_wheel = 0;
+        imp_reg_wreg = 0;
+        for (char i = 0; i < 16; i++) imp_regs[i] = 0;
 		/* execute instruction queue */
         for (char i = 0; i < INSTRUCTION_BUFFER_SIZE; i++) {
             if (instr_buff[i] == IMP_END) {
