@@ -15,8 +15,6 @@ Target device: PIC18F4520.
 
 ### Directory Structure ###
 
-  * [bin](/bin) binary executables
-  * [build](/build) intermediate binaries
   * [docs](/docs) apply directly to the eyeballs
     * [libdocs](/docs/libdocs) relevant library documentation
     * [manual](/docs/manual) RTFM
@@ -24,5 +22,4 @@ Target device: PIC18F4520.
         * [pcb](/docs/art/pcb)
         * [propaganda](/docs/art/propaganda)
   * [include](/include) our libraries
-  * [lib](/lib) their libraries
   * [source](/source) serious business
