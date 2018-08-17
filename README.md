@@ -1,8 +1,6 @@
 # IMPBADGE
 ##***Stay alert, you're in a public repo now.***
 
-# This repository is for fledging demons.
-
 ## Current Version: 1.0.666 (IMPBADGE has been summoned and unleashed upon the wild)
   
 *Version numbering: [Release number].[Updates this release].[666 if validated; 0 if not]*
