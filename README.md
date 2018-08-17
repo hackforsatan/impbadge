@@ -8,6 +8,8 @@
 ## Current Version: 1.0.666 (IMPBADGE has been summoned and unleashed upon the wild)
   
 *Version numbering: [Release number].[Updates this release].[666 if validated; 0 if not]*
+Release build used XC8 compiler v1.43 and PICKit 3.
+Target device: PIC18F4520.
 
 ### Directory Structure ###
 
